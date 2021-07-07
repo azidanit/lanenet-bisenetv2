@@ -69,28 +69,6 @@ def minmax_scale(input_arr):
 
     return output_arr
 
-#ui actions..
-
-control_x = 0
-mouse_x = 0
-control_y = 0
-mouse_y = 0
-kb_input = 0
-moving_average_size = 100
-moving_average_vector = np.array([])
-moving_window_size = 8
-def mouse_events(event, x, y, flags, param):
-    global mouse_x, mouse_y, kb_input, control_x, control_y
-        
-    if event == cv2.EVENT_LBUTTONDOWN:
-        if kb_input == ord('x'):
-            mouse_x = x
-        elif kb_input == ord('y'):
-            mouse_y = y
-        elif kb_input == ord(' '):
-            kb_input = 0
-            
-
 def test_lanenet(video_path, weights_path):
     """
 
@@ -237,72 +215,6 @@ def test_lanenet(video_path, weights_path):
             cv2.imshow("out img ins", cv2.addWeighted(image_vis, 1, cv2.resize(embedding_image, (640,480)), 0.75, 0))
             cv2.imshow("src_image",image_vis)
 
-            
-            res_wk = cv2.waitKey(30)
-
-            LOG.info('frame {frame_c}, FPS: {fps}'.format(frame_c=frame_counter,fps=-1/(t_start-time.time())))
-
-
-            if res_wk == ord('q'):
-                break
-
-            
-            if res_wk == ord('x'):
-                kb_input = res_wk
-            if res_wk == ord('y'):
-                kb_input = res_wk
-            if res_wk == ord(' '):
-                kb_input = res_wk
-                control_x = mouse_x
-                control_y = mouse_y
-
-            # drawing on mainwindow + detecting control point
-            control_point_y = -1
-            _tmp = 0
-            test = False
-            bin_mask = np.array(binary_seg_image[0])
-            for i in reversed(range(256)):
-                # pixsum = np.sum(bin_mask[   max(0,i-moving_window_size//2)         : min(255,i+moving_window_size//2),
-                #                             max(0,control_x-moving_window_size//2) : min(255,control_x+moving_window_size//2)])
-                pixsum = 0
-                for ii in range(moving_window_size//2):
-                    for jj in range(moving_window_size//2):
-                        if 0<ii+i<256 and 0<jj+control_x<513:
-                            pixsum += bin_mask[ii+i][jj+control_x]
-                # print(pixsum)
-                if pixsum > _tmp:
-                    _tmp = pixsum
-                    control_point_y = i
-                    test = True
-            # if test:
-            #     print('WHYYY')
-            cv2.circle(image, (control_x,control_point_y), 5, 255, 3)
-
-            cv2.line(  image, (control_x, 0), (control_x,255), (0,0,255), 2)
-            cv2.line(  image, (0, control_y), (513,control_y), (0,0,255), 2)
-
-            cv2.line(  image, (mouse_x, 0),   (mouse_x, 255),  (50,50,200), 2)
-            cv2.line(  image, (0, mouse_y),   (513,mouse_y),   (50,50,200), 2)
-
-            cv2.imshow("MainWindow",image)
-
-            distance_error = control_y - control_point_y
-            moving_average_vector = np.append(moving_average_vector, distance_error)
-            # print("asdf",moving_average_vector.shape)
-                # print("HAHAHAH")
-            if len(moving_average_vector) > moving_average_size:
-                moving_average_vector = moving_average_vector[1:]
-
-            moving_average = int(np.sum(moving_average_vector)/len(moving_average_vector) )
-            print(distance_error," ",moving_average)
-
-            # to_send = bytes(str(distance_error)+","+str(moving_average),'utf-8')
-            # udp_socket.sendto(to_send,("127.0.0.1",5005))
-            
-            # print("DISTAN CE ERROR: ", distance_error)
-            
-            # if cv2.waitKey(30) & 0xFF == ord('q'):
-            #     break
             
     cv2.destroyAllWindows()
 
